@@ -1,0 +1,117 @@
+---
+title: "week003"
+author: "Landon Porter"
+date: "2/7/2022"
+output: html_document
+---
+
+ 
+ 
+ 
+ 
+```{r}
+library(tidyverse)
+ f <- "https://raw.githubusercontent.com/difiore/ada-2022-datasets/main/data-wrangling.csv"
+ 
+ 
+ d <- read_csv(f, col_names = TRUE)
+ head(d)
+ d
+ 
+ s <- mutate(d, BDS= (Body_mass_female_mean) / (Body_mass_male_mean)) 
+   
+   
+  
+ s <- group_by(s, Family)
+ r <- summarise(s, meanBDS=mean(BDS, na.rm= TRUE), SDBDS=sd(BDS, na.rm = TRUE))
+ 
+plot(r$meanBDS, r$SDBDS)
+
+library(tidyverse)
+
+p <- ggplot(data = s, aes(x= Body_mass_female_mean, y=Body_mass_male_mean, color=factor(Family)), na.rm=TRUE) + geom_point()
+p
+
+p <- p + facet_wrap(~ Family, ncol=4) # wrap data "by" family into 4 columns
+p
+
+ 
+
+
+#Create a new variable named sex_ratio, which is the ratio of the number of adult females to adult males in a typical group.
+s <- mutate(s, sex_ratio = AdultFemale / AdultMales) 
+s$sex_ratio
+
+
+
+
+#Create a new variable named DI (for “defensibility index”), which is the ratio of day range length to the diameter of the home range.
+
+s <- mutate(s, DI = DayLength_km / (sqrt(HomeRange_km2)/pi)*2 )
+print (s$DI) 
+
+
+
+#Plot the relationship between day range length and time spent moving, for these primate species overall and by family. Do species that spend more time moving travel farther overall? How about within any particular primate family? Should you transform either of these variables?
+
+p <- ggplot(data = s, aes(x= DayLength_km, y= Move, color=factor(Family)), na.rm=TRUE) + geom_point()
+p
+
+p <- p + facet_wrap(~ Family, ncol=4) # wrap data "by" family into 4 columns
+p
+
+
+#Plot the relationship between day range length and time group size, overall and by family. Do species that live in larger groups travel farther overall? How about within any particular primate family? Should you transform either of these variables?
+
+p <- ggplot(data = s, aes(x= DayLength_km, y= MeanGroupSize, color=factor(Family)), na.rm=TRUE) + geom_point()
+p
+
+p <- p + facet_wrap(~ Family, ncol=4) # wrap data "by" family into 4 columns
+p
+
+
+#Plot the relationship between body size dimorphism and canine size dimorphism overall and by family. Do taxa with greater size dimorphism also show greater canine dimorphism?
+
+p <- ggplot(data = s, aes(x= "BSD", y= s$Canine_Dimorphism, color=factor(Family)), na.rm=TRUE) + geom_point()
+p
+
+p <- p + facet_wrap(~ Family, ncol=4) # wrap data "by" family into 4 columns
+p
+
+#Create a new variable named diet_strategy that is “frugivore” if fruits make up >50% of the diet, “folivore” if leaves make up >50% of the diet, and “omnnivore” if neither of these is true. Then, do boxplots of group size for species with different dietary strategies. Do frugivores live in larger groups than folivores?
+
+
+s <- mutate(s, "diet" = ifelse(
+  Fruit >= 50,
+  "frugivore",
+  ifelse(Leaves >= 50, "folivore", "omnivore")
+))
+
+
+
+#Then, do boxplots of group size for species with different dietary strategies. Do frugivores live in larger groups than folivores?
+
+p <- ggplot(data = s, aes(x= diet, y= MeanGroupSize)) 
+p <- p + geom_boxplot(na.rm = TRUE)
+p <- p + theme(axis.text.x=element_text(angle=0))
+p <- p + xlab("Diet") + ylab("MeanGroupSize")
+p
+
+
+#Add a variable, Binomial to the data frame d, which is a concatenation of the Genus and Species…
+#Trim the data frame to only include the variables Binomial, Family, Brain_size_species_mean, and Body_mass_male_mean…
+#Group these variables by Family…
+#Calculate the average value for Brain_size_species_mean and Body_mass_male_mean per Family (remember, you may need to specify na.rm = TRUE)…
+#And arrange by increasing average brain size
+
+
+
+
+ l <- mutate(s, "Binomial" = paste(Genus, Species, sep = " ")) %>% 
+   select(Binomial, Family, Brain_Size_Species_Mean, Body_mass_male_mean) %>%
+   group_by(Family) %>% summarise(avgBrain = mean(Brain_Size_Species_Mean, na.rm = TRUE), avgM = mean(Body_mass_male_mean, na.rm = TRUE)) %>% arrange(avgBrain, by_group=FALSE)                   
+
+
+
+```
+
